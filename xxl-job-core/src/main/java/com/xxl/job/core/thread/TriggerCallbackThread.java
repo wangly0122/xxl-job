@@ -61,6 +61,7 @@ public class TriggerCallbackThread {
                 // normal callback
                 while(!toStop){
                     try {
+                        //从队列消费
                         HandleCallbackParam callback = getInstance().callBackQueue.take();
                         if (callback != null) {
 

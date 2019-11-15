@@ -38,6 +38,11 @@ public class XxlJobConfig {
     private int logRetentionDays;
 
 
+    /**
+     * 执行器注册入口
+     *     思想: 有时候我们也可以采取这种形式,项目启动时需要初始化东西,用@Bean配合
+     * @return
+     */
     @Bean(initMethod = "start", destroyMethod = "destroy")
     public XxlJobSpringExecutor xxlJobExecutor() {
         logger.info(">>>>>>>>>>> xxl-job config init.");

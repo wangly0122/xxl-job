@@ -43,8 +43,10 @@ public class ExecutorRegistryThread {
                 while (!toStop) {
                     try {
                         RegistryParam registryParam = new RegistryParam(RegistryConfig.RegistType.EXECUTOR.name(), appName, address);
+                        //获取AdminBiz动态代理类
                         for (AdminBiz adminBiz: XxlJobExecutor.getAdminBizList()) {
                             try {
+                                //这里不会真正执行 adminBiz.registry(registryParam)，只是调用一下方法，触发动态代理
                                 ReturnT<String> registryResult = adminBiz.registry(registryParam);
                                 if (registryResult!=null && ReturnT.SUCCESS_CODE == registryResult.getCode()) {
                                     registryResult = ReturnT.SUCCESS;

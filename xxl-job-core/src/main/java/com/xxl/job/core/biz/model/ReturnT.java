@@ -3,7 +3,7 @@ package com.xxl.job.core.biz.model;
 import java.io.Serializable;
 
 /**
- * common return
+ * 全局公共返回实体封装类 common return
  * @author xuxueli 2015-12-4 16:32:31
  * @param <T>
  */

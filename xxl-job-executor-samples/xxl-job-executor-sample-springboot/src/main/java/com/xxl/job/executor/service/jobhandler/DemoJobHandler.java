@@ -32,6 +32,7 @@ public class DemoJobHandler extends IJobHandler {
 			XxlJobLogger.log("beat at:" + i);
 			TimeUnit.SECONDS.sleep(2);
 		}
+		SUCCESS.setContent("HELLO WORLD");
 		return SUCCESS;
 	}
 

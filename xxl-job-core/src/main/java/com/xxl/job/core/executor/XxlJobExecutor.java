@@ -67,22 +67,35 @@ public class XxlJobExecutor  {
     // ---------------------- start + stop ----------------------
     public void start() throws Exception {
 
-        // init logpath
-        XxlJobFileAppender.initLogPath(logPath);
+        /**
+         * 设置日志目录(如果不存在就创建)
+         */
+         XxlJobFileAppender.initLogPath(logPath);
 
-        // init invoker, admin-client
+        /**
+         * 1.初始化AdminBizList，并且会创建AdminBiz的动态代理XxlRpcReferenceBean，而最后会用到这个类进行自动注册（标记Tag，下文会用到这里）
+         * 2. 一个调度中心地址对应一个动态代理
+         */
         initAdminBizList(adminAddresses, accessToken);
 
 
         // init JobLogFileCleanThread
+        /**
+         *   1.日志定时清理线程
+         *   2.执行器日志保存天数：值大于3时生效，启用执行器Log文件定期清理功能，否则不生效;默认是-1
+         */
         JobLogFileCleanThread.getInstance().start(logRetentionDays);
 
         // init TriggerCallbackThread
+        /**
+         *  1.初始化触发器回调线程(用RPC回调调度中心接口)
+         */
         TriggerCallbackThread.getInstance().start();
 
         // init executor-server
         port = port>0?port: NetUtil.findAvailablePort(9999);
         ip = (ip!=null&&ip.trim().length()>0)?ip: IpUtil.getIp();
+        //初始化rpc服务
         initRpcProvider(ip, port, appName, accessToken);
     }
     public void destroy(){
@@ -111,16 +124,18 @@ public class XxlJobExecutor  {
 
 
     // ---------------------- admin-client (rpc invoker) ----------------------
-    private static List<AdminBiz> adminBizList;
+    private static List<AdminBiz> adminBizList;  //将AdminBiz动态代理装入该集合中
     private static Serializer serializer;
     private void initAdminBizList(String adminAddresses, String accessToken) throws Exception {
         serializer = Serializer.SerializeEnum.HESSIAN.getSerializer();
+        //支持调度中心集群模式,地址以逗号分隔
+        //一个调度中心地址对应一个动态代理
         if (adminAddresses!=null && adminAddresses.trim().length()>0) {
             for (String address: adminAddresses.trim().split(",")) {
                 if (address!=null && address.trim().length()>0) {
 
                     String addressUrl = address.concat(AdminBiz.MAPPING);
-
+                    //这里很重要，这里initAdminBizList方法会初始化AdminBizList，并且会创建AdminBiz的动态代理XxlRpcReferenceBean，而最后会用到这个类进行自动注册（标记Tag，下文会用到这里）
                     AdminBiz adminBiz = (AdminBiz) new XxlRpcReferenceBean(
                             NetEnum.NETTY_HTTP,
                             serializer,
@@ -166,6 +181,7 @@ public class XxlJobExecutor  {
 
         // init, provider factory
         String address = IpUtil.getIpPort(ip, port);
+        //执行器的appName和ip:port 信息
         Map<String, String> serviceRegistryParam = new HashMap<String, String>();
         serviceRegistryParam.put("appName", appName);
         serviceRegistryParam.put("address", address);
@@ -181,6 +197,9 @@ public class XxlJobExecutor  {
 
     }
 
+    /**
+     * 注册关键类
+     */
     public static class ExecutorServiceRegistry extends ServiceRegistry {
 
         @Override

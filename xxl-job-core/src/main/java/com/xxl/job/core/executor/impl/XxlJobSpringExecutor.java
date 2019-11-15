@@ -18,10 +18,16 @@ import java.util.Map;
 public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationContextAware {
 
 
+    /**
+     * 执行器启动,注册等入口
+     * @throws Exception
+     */
     @Override
     public void start() throws Exception {
 
-        // init JobHandler Repository
+        /**
+         * init JobHandler Repository
+         */
         initJobHandlerRepository(applicationContext);
 
         // refresh GlueFactory
@@ -37,7 +43,12 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
             return;
         }
 
-        // init job handler action
+        /**
+         * init job handler action
+         *     1.注册到执行器工厂：添加“@JobHandler(value="自定义jobhandler名称")”注解，注解value值对应的是调度中心新建任务的JobHandler属性的值
+         *     2.获取Spring Ioc容器中初始化的bean上带有@JobHandle注解的 bean
+         *     3. 所有执行器集成IJobHandler
+         */
         Map<String, Object> serviceBeanMap = applicationContext.getBeansWithAnnotation(JobHandler.class);
 
         if (serviceBeanMap!=null && serviceBeanMap.size()>0) {
@@ -48,6 +59,7 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
                     if (loadJobHandler(name) != null) {
                         throw new RuntimeException("xxl-job jobhandler["+ name +"] naming conflicts.");
                     }
+                    //将执行器注册到执行器中心(CurrentHashMap)
                     registJobHandler(name, handler);
                 }
             }

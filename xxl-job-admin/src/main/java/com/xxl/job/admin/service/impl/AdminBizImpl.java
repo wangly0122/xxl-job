@@ -124,6 +124,11 @@ public class AdminBizImpl implements AdminBiz {
         }
     }
 
+    /**
+     * 向数据库表xxl_job_registry插入执行器的注册信息,主要是执行器的appName及 ip:port
+     * @param registryParam
+     * @return
+     */
     @Override
     public ReturnT<String> registry(RegistryParam registryParam) {
         int ret = xxlJobRegistryDao.registryUpdate(registryParam.getRegistGroup(), registryParam.getRegistryKey(), registryParam.getRegistryValue());

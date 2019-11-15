@@ -56,6 +56,11 @@ public class XxlJobServiceImpl implements XxlJobService {
 		return maps;
 	}
 
+    /**
+     * 添加一个任务
+     * @param jobInfo
+     * @return
+     */
 	@Override
 	public ReturnT<String> add(XxlJobInfo jobInfo) {
 		// valid

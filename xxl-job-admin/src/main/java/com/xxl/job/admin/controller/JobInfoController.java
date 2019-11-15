@@ -98,7 +98,13 @@ public class JobInfoController {
 		
 		return xxlJobService.pageList(start, length, jobGroup, triggerStatus, jobDesc, executorHandler, author);
 	}
-	
+
+    /**
+     *
+     * 添加一个任务
+     * @param jobInfo
+     * @return
+     */
 	@RequestMapping("/add")
 	@ResponseBody
 	public ReturnT<String> add(XxlJobInfo jobInfo) {
