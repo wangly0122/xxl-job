@@ -1,0 +1,80 @@
+# XXL-JOB-EXECUTOR启动流程(2.1.1)
+
+
+## 初始化XxlJobSpringExecutor
+
+
+* 以@Bean形式作为整个启动流程的入口
+
+* 实现ApplicationContextAware接口，可以从ApplicationContext获取整个容器的bean
+
+ private static ApplicationContext applicationContext;
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+    public static ApplicationContext getApplicationContext() {
+        return applicationContext;
+    }
+
+* 进入到start()方法
+
+## initJobHandlerRepository(applicationContext)
+
+将标注@JobHandler从Spring Ioc中取出，将其放入 ConcurrentMap<String, IJobHandler> jobHandlerRepository，
+
+其中key 是@JobHandler的value值
+
+
+## GlueFactory.refreshInstance(1)  待研究
+
+## XxlJobFileAppender.initLogPath(logPath)
+
+创建log存放的目录，如果没指定log的目录则采用默认地址
+
+## initAdminBizList(adminAddresses, accessToken) 重点
+
+* 如果调度中心采取集群部署，那么多个调度中心地址adminAddress以,分隔配置
+
+* 一个调度中心创建一个AdminBiz的动态代理XxlRpcReferenceBean，后面执行器向调度中心注册
+adminBiz.registry(XxlRegistryFactory)会进入到动态代理类XxlRpcReferenceBean的getObject()方法中，并
+将创建的AdMinBi动态代理对象放入List<AdminBiz> adminBizList，便于后面使用
+
+
+## JobLogFileCleanThread.getInstance().start(logRetentionDays)
+
+* 如果配置的日志保留天数大于3天，那么启动一个死循环线程JobLogFileCleanThread
+
+* JobLogFileCleanThread每隔1天去清理
+
+* 开启JobLogFileCleanThread，并将其设置为守护线程Daemo
+
+* 如果该线程需要停止
+
+====
+ toStop = true;  //让死循环不再执行
+
+        if (localThread == null) {
+            return;
+        }
+
+        // interrupt and wait
+        localThread.interrupt(); //中断
+        try {
+            localThread.join();
+        } catch (InterruptedException e) {
+            logger.error(e.getMessage(), e);
+        }
+====
+
+* xxl-job中创建对象更多的是饿汉式
+
+====
+ JobLogFileCleanThread.getInstance()；
+
+ private static JobLogFileCleanThread instance = new JobLogFileCleanThread();
+====
+
+## TriggerCallbackThread.getInstance().start();
+
+## initRpcProvider(ip, port, appName, accessToken);

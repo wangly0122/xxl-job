@@ -131,6 +131,8 @@ public class AdminBizImpl implements AdminBiz {
      */
     @Override
     public ReturnT<String> registry(RegistryParam registryParam) {
+        System.out.println("===============================================");
+        System.out.println("向数据库插入执行器的信息： AppName， Ip:port ");
         int ret = xxlJobRegistryDao.registryUpdate(registryParam.getRegistGroup(), registryParam.getRegistryKey(), registryParam.getRegistryValue());
         if (ret < 1) {
             xxlJobRegistryDao.registrySave(registryParam.getRegistGroup(), registryParam.getRegistryKey(), registryParam.getRegistryValue());

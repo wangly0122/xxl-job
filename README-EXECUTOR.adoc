@@ -1,0 +1,46 @@
+# XXL-JOB-EXECUTOR
+
+## 执行器启动流程
+
+*  XxlJobSpringExecutor初始化--项目启动入口
+ 实现 ApplicationContextAware接口， 进入start()关键方法
+
+*  initJobHandlerRepository(applicationContext);
+. 从Spring Ioc 容器中找到标注了@JobHandler注解的bean(JobHandler),将他们放入
+    ConcurrentMap<String, IJobHandler> jobHandlerRepository中
+. 以上过程需要灵活运用注解相关知识，如
+====
+ Map<String, Object> serviceBeanMap = applicationContext.getBeansWithAnnotation(JobHandler.class);
+ serviceBean.getClass().getAnnotation(JobHandler.class).value();
+====
+
+* GlueFactory.refreshInstance(1)
+
+. 刷新Glue, 暂不知道是干嘛的
+
+* super.start() 进入到父类XXlJobExecutor中的start()方法
+
+* XxlJobFileAppender.initLogPath(logPath) 设置日志存放位置
+
+* initAdminBizList(adminAddresses, accessToken)  及其重要
+
+. 初始化AdminBizList，并且会创建AdminBiz的动态代理XxlRpcReferenceBean，而最后会用到这个类进行自动注册
+
+. 一个调度中心地址对应一个动态代理
+
+* JobLogFileCleanThread.getInstance().start(logRetentionDays)日志定时清理线程
+
+. 参数值设为大于3才启作用，不然不会启动清理日志的线程
+
+* TriggerCallbackThread.getInstance().start()  回调队列
+
+ 具体细节待分析
+
+* initRpcProvider(ip, port, appName, accessToken) 初始化rpc服务
+
+. 启动内嵌Netty容器，并执行his.server.setStartedCallback(new BaseCallback() {......}
+
+. ExecutorServiceRegistry start方法
+
+. 启动一个注册线程
+

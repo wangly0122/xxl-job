@@ -43,7 +43,7 @@ public class JobRegistryMonitorHelper {
 								XxlJobAdminConfig.getAdminConfig().getXxlJobRegistryDao().removeDead(ids);
 							}
 
-							// fresh online address (admin/executor)
+							// fresh online address (admin/executor)  key: appName,  value：
 							HashMap<String, List<String>> appAddressMap = new HashMap<String, List<String>>();
 							List<XxlJobRegistry> list = XxlJobAdminConfig.getAdminConfig().getXxlJobRegistryDao().findAll(RegistryConfig.DEAD_TIMEOUT);
 							if (list != null) {
@@ -63,7 +63,7 @@ public class JobRegistryMonitorHelper {
 								}
 							}
 
-							// fresh group address
+							// fresh group address，如果发现有在线的执行器，那么将执行器的ip:port 更新到xxl_job_group表中，同一个appName对应多个执行器，用逗号进行分割
 							for (XxlJobGroup group: groupList) {
 								List<String> registryList = appAddressMap.get(group.getAppName());
 								String addressListStr = null;
@@ -85,7 +85,7 @@ public class JobRegistryMonitorHelper {
 						}
 					}
 					try {
-						TimeUnit.SECONDS.sleep(RegistryConfig.BEAT_TIMEOUT);
+						TimeUnit.SECONDS.sleep(RegistryConfig.BEAT_TIMEOUT);  //每隔30秒执行一个，这个线程永远会执行下去
 					} catch (InterruptedException e) {
 						if (!toStop) {
 							logger.error(">>>>>>>>>>> xxl-job, job registry monitor thread error:{}", e);

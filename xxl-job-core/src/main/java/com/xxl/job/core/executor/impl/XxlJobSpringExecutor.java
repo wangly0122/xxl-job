@@ -26,11 +26,11 @@ public class XxlJobSpringExecutor extends XxlJobExecutor implements ApplicationC
     public void start() throws Exception {
 
         /**
-         * init JobHandler Repository
+         * init JobHandler Repository 初始化系统内置的所有JobHandler,一种任务就是一个JobHandler，将其装入CurrentHashMap
          */
         initJobHandlerRepository(applicationContext);
 
-        // refresh GlueFactory
+        // refresh GlueFactory  刷寻Glue，实质就是创建SpringGlueFactory
         GlueFactory.refreshInstance(1);
 
 

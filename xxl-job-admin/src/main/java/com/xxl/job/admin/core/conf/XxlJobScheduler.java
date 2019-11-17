@@ -33,6 +33,14 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * @author xuxueli 2018-10-28 00:18:17
  */
+
+/**
+ * 调度中心启动入口
+ *  1.国际化
+ *  2.启动死循环线程，每隔几秒扫描在线的执行器并将其更新到xxl_job_group的address_list字段（一个appName对应多个执行器）
+ *  3.启动一个死循环线程，基于数据库查询xxl_job_log，得到执行失败的任务，采取重试机制还是警告发送邮件等处理手段
+ *  4.启动rpc服务端
+ */
 @Component
 @DependsOn("xxlJobAdminConfig")
 public class XxlJobScheduler implements InitializingBean, DisposableBean {
@@ -41,19 +49,26 @@ public class XxlJobScheduler implements InitializingBean, DisposableBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        // init i18n
+        //1. init i18n 国际化相关
         initI18n();
 
         // admin registry monitor run
+        /**
+         * 2.检测那些执行器是在线的，并将其更新到xxl_job_group中，
+         *这张表能够知道同一appName有哪些执行器在线,address_list 以逗号进行分割
+         */
         JobRegistryMonitorHelper.getInstance().start();
 
         // admin monitor run
+        /**
+         * 3.对任务跑失败的一些处理，如重试，警告采取邮件发送的形式
+         */
         JobFailMonitorHelper.getInstance().start();
 
-        // admin-server
+        // admin-server  启动admin端服务， 接收注册请求等
         initRpcProvider();
 
-        // start-schedule
+        // start-schedule 调度器，死循环，在xxl_job_info表里取将要执行的任务，更新下次执行时间的，调用JobTriggerPoolHelper类，来给执行器发送调度任务的
         JobScheduleHelper.getInstance().start();
 
         logger.info(">>>>>>>>> init xxl-job admin success.");
@@ -133,9 +148,9 @@ public class XxlJobScheduler implements InitializingBean, DisposableBean {
         executorBiz = (ExecutorBiz) new XxlRpcReferenceBean(
                 NetEnum.NETTY_HTTP,
                 Serializer.SerializeEnum.HESSIAN.getSerializer(),
-                CallType.SYNC,
+                CallType.SYNC,  //同步
                 LoadBalance.ROUND,
-                ExecutorBiz.class,
+                ExecutorBiz.class,  //动态代理的接口，所以一个handler可以制造多种动态代理
                 null,
                 3000,
                 address,

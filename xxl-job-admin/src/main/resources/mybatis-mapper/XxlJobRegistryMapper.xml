@@ -22,6 +22,7 @@
 	<select id="findDead" parameterType="java.lang.Integer" resultType="java.lang.Integer" >
 		SELECT t.id
 		FROM xxl_job_registry AS t
+		<!--<![CDATA[   ]]>  mybatis解决特殊字符不会被转义-->
 		WHERE t.update_time <![CDATA[ < ]]> DATE_ADD(NOW(),INTERVAL -#{timeout} SECOND)
 	</select>
 	
